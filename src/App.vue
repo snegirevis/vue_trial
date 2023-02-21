@@ -1,51 +1,55 @@
 <template>
 
 <div class="app">
-  <form @submit.prevent>
-    <h4>Введите данные о Вашем котике</h4>
-    <input v-bind:value="name" @input="name= $event.target.value" class="input" type="text" placeholder="Имя котика">
-    <input v-bind:value="age" @input="age= $event.target.value" class="input" type="text" placeholder="Возраст котика">
-    <button class="btn" @click="createCat">Добавить</button>
-  </form>
-
-  <div class="cats" v-for="cat in cats">
-  <div><strong>Имя:</strong>{{ cat.name}}</div>
-  <div><strong>Возраст:</strong>{{ cat.age}}</div>
-  </div>
+  <h1>Страница с котиками</h1>
+  <my-button @click="showDialog">Добавить котика
+  </my-button>
+  <my-dialog v-model:show="dialogVisible" >
+    <cats-form @create="createCat"/>
+  </my-dialog>
+  <cats-list v-bind:cats="cats" @remove="removeCat"/>
 </div>
-
 </template>
 
 <script>
+import CatsForm from "@/components/CatsForm.vue";
+import CatsList from "@/components/CatsList.vue";
+
 
 export default{
+    components:{
+      CatsList, CatsForm
+    },
     data(){
       return {
         cats:[
-          {id:1, name:'Barsik', age: 2},
-          {id:2, name:'Murzik', age: 3},
-          {id:3, name:'Julia', age: 4},
+          {id:1, name:'Barsik', age: 2, color: "Ginger"},
+          {id:2, name:'Murzik', age: 3, color:"Black"},
+          {id:3, name:'Julia', age: 4, color:"White"},
         ],
+        dialogVisible: false,
 
         name: '',
         age: '',
+        color:'',
+       
+ 
        
       }
     },
       methods:{
+       createCat(cat){
+        this.cats.push(cat);
+        this.dialogVisible= false;
+       },
+       removeCat(cat){
+         this.cats=this.cats.filter(c=> c.id != cat.id)
+       },
+       showDialog(){
+        this.dialogVisible=true;
+       },
+  
 
-      createCat(){
-       const newCat={
-        id:Date.now(),
-        name:this.name,
-        age:this.age,
-       }
-        this.cats.push(newCat);
-        this.name='';
-        this.age='';
-      }
-     
-      
 
       }
     }
@@ -63,32 +67,6 @@ export default{
 padding: 20px;
 }
 
-form{
-  display: flex;
-  flex-direction: column;
-}
 
-.cats{
-  padding:15px;
-  border: 2px solid teal;
-  margin-top: 15px;
-}
 
-.input{
-  width: 100%;
-  border: 1px solid teal;
-  padding: 10px 15px;
-  margin-top: 15px;
-}
-
-.btn{
- margin-top: 15px;
- align-self: center;
- padding: 10px 15px;
- background: none;
- color: teal;
- border-radius: 20px;
- border: 1px solid;
-
-}
 </style>
