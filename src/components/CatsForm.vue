@@ -2,7 +2,7 @@
 <form @submit.prevent>
     <h4>Введите данные о Вашем котике</h4>
     <my-input v-model="cat.name"  class="input" type="text" placeholder="Имя котика"></my-input>
-    <my-input v-model="cat.age" class="input" type="text" placeholder="Возраст котика"></my-input>
+    <my-input v-model.number="cat.age" class="input" type="text" placeholder="Возраст котика"></my-input>
     <my-input v-model="cat.color" class="input" type="text" placeholder="Окраска котика" ></my-input>
     <my-button class="btn" @click="createCat">Добавить</my-button>
    

@@ -33,5 +33,9 @@ export default{
   margin-top: 15px;
 }
 
+h3{
+  margin-top: 10px;
+}
+
 
 </style>
