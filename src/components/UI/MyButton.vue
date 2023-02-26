@@ -13,7 +13,6 @@ export default{
 
 <style scoped>
 .btn{
- margin-top: 15px;
  align-self: center;
  padding: 10px 15px;
  background: none;

@@ -1,73 +1,106 @@
 <template>
 
 <div class="app">
-  <h1>Страница с котиками</h1>
-  <my-button @click="fetchUsers">Get posts</my-button>
-  <div v-for="massiv in massivs">
-    <p>{{ massiv.title }}</p>
+  <h1>Страница с постами</h1>
+  <my-input v-model="searchQuery" placeholder="Поиск..."></my-input>
+  <div class="app_btns">
+    <my-button @click="showDialog">Добавить пост</my-button>
+    <my-select v-model="selectedSort" :options="sortOptions" />
   </div>
-
-  <my-button @click="showDialog">Добавить котика
-  </my-button>
+  
   <my-dialog v-model:show="dialogVisible" >
-    <cats-form @create="createCat"/>
+    <posts-form @create="createPost"/>
   </my-dialog>
-  <cats-list v-bind:cats="cats" @remove="removeCat"/>
+  <posts-list v-bind:posts="sortedSearch" @remove="removePost" v-if="!stillLoading"/>
+  <div v-else class="loading">Идет загрузка...</div>
+  <div class="page_wrapper">
+    <div v-for="page in totalPages" :key="page" class="page">{{ page }}</div>
+  </div>
 </div>
 </template>
 
 <script>
-import CatsForm from "@/components/CatsForm.vue";
-import CatsList from "@/components/CatsList.vue";
+import PostsForm from "@/components/PostsForm.vue";
+import PostsList from "@/components/PostsList.vue";
 import axios from 'axios';
 
 export default{
     components:{
-      CatsList, CatsForm
+      PostsList, PostsForm
     },
     data(){
       return {
-        cats:[
-          {id:1, name:'Barsik', age: 2, color: "Ginger"},
-          {id:2, name:'Murzik', age: 3, color:"Black"},
-          {id:3, name:'Julia', age: 4, color:"White"},
-        ],
+        posts:[],
         dialogVisible: false,
-        massivs:[],
-        massId:[],
-        massName:[],
-        massColor:[],
-       
+        stillLoading:false,
+        selectedSort:'',
+        searchQuery:'',
+        page:1,
+        limit:10,
+        totalPages:0,
+        sortOptions:[
+         {value:'title', name:'По названию'},
+         {value:'body', name:'По описанию'},
+         {value:'id', name:'По дате создания'}
+        ]    
       }
     },
       methods:{
-       createCat(cat){
-        this.cats.push(cat);
+       createPost(post){
+        post.id=(this.posts.length+1);
+        this.posts.push(post);
         this.dialogVisible= false;
        },
-       removeCat(cat){
-         this.cats=this.cats.filter(c=> c.id != cat.id)
+       removePost(post){
+         this.posts=this.posts.filter(p=> p.id != post.id);
        },
        showDialog(){
         this.dialogVisible=true;
        },
-       async fetchUsers(){
+       async fetchPosts(){
         try{
-         const response= await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10');
-         this.massivs=response.data;
-         this.massId.push(this.massivs.forEach(function(){
-          return this.massiv.id;
-         }));
-         
-         //крч можно осздать отдельную переменную массив под каждое поле и запушить 
-         
+            this.stillLoading=true;
+            const response= await axios.get('https://jsonplaceholder.typicode.com/posts',{
+              params:{
+                _page: this.page,
+                _limit:this.limit
+              }
+            });
+            this.totalPages=Math.ceil(response.headers['x-total-count']/ this.limit);
+            this.posts=response.data;  
+    
         }
         catch(e){
           alert('Error')
         }
+        finally{
+          this.stillLoading=false;
+        }
        }
 
-      }
+      },
+
+      mounted(){
+        this.fetchPosts();
+      },
+
+      computed:{
+        sortedPosts(){
+          if(this.selectedSort=='id'){
+            return [...this.posts].sort((post1,post2)=>
+             post2[this.selectedSort]-post1[this.selectedSort]
+            )
+          }
+          else{
+          return [...this.posts].sort((post1,post2) => post1[this.selectedSort]?.localeCompare(post2[this.selectedSort]))
+        }
+      },
+       sortedSearch(){
+        return this.sortedPosts.filter(post => post.title.toLowerCase().includes(this.searchQuery.toLowerCase())); 
+       }
+      },
+
+     
     }
 
 </script>
@@ -83,6 +116,21 @@ export default{
 padding: 20px;
 }
 
+.app_btns{
+margin:15px 0;
+ display: flex;
+ justify-content:space-between;
+}
+
+.page_wrapper{
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.page{
+  padding: 10px;
+}
 
 
 </style>
